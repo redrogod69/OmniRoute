@@ -1,0 +1,18 @@
+# Secrets: never commit real keys
+.env
+
+# Python and local environment
+.venv/
+__pycache__/
+
+# Local run output
+*.log
+
+# Large Windows bundle pieces (kept out of git; shipped in the offline zip instead)
+wheels/
+installers/
+ollama/
+*.zip
+
+# macOS
+.DS_Store

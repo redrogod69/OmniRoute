@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OmniRoute · Unified AI Gateway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f6f7fb; --panel:#ffffff; --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e2e8f0;
+    --brand:#4f46e5; --brand2:#7c3aed; --brand-soft:#eef2ff;
+    --ok:#059669; --ok-soft:#ecfdf5; --bad:#dc2626; --bad-soft:#fef2f2; --warn:#d97706; --warn-soft:#fffbeb;
+    --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.05), 0 4px 16px rgba(15,23,42,.05);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:Inter,"Segoe UI",system-ui,sans-serif; background:var(--bg); color:var(--ink); font-size:14.5px; }
+  a { color:var(--brand); }
+
+  nav { position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:28px; padding:0 28px; height:62px;
+        background:rgba(255,255,255,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; letter-spacing:-.02em; }
+  .logo-mark { width:32px; height:32px; border-radius:9px; background:linear-gradient(135deg,var(--brand),var(--brand2)); display:grid; place-items:center; color:#fff; font-size:16px; }
+  nav .links { display:flex; gap:22px; } nav .links a { color:var(--ink2); text-decoration:none; font-weight:500; font-size:14px; }
+  nav .links a:hover { color:var(--brand); }
+  .status { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; padding:6px 12px; border-radius:999px; background:var(--bad-soft); color:var(--bad); white-space:nowrap; }
+  .status .dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+  .status.up { background:var(--ok-soft); color:var(--ok); } .status.up .dot { box-shadow:0 0 0 4px rgba(5,150,105,.18); }
+
+  .hero { padding:44px 28px 30px; background:radial-gradient(1200px 300px at 20% -10%, #e0e7ff 0, transparent 60%), radial-gradient(900px 300px at 90% 0, #f3e8ff 0, transparent 60%); }
+  .wrap { max-width:1280px; margin:0 auto; }
+  .eyebrow { display:inline-block; font-size:12px; font-weight:600; color:var(--brand); background:var(--brand-soft); padding:5px 11px; border-radius:999px; }
+  .hero h1 { font-size:36px; line-height:1.15; letter-spacing:-.03em; margin:14px 0 10px; max-width:820px; }
+  .hero h1 span { background:linear-gradient(90deg,var(--brand),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .hero p.lead { font-size:16.5px; color:var(--ink2); max-width:780px; line-height:1.6; margin:0; }
+  .hero .cta { margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; }
+  .btn { display:inline-flex; align-items:center; gap:8px; border:0; border-radius:10px; padding:11px 18px; font:600 14px Inter,sans-serif; cursor:pointer; text-decoration:none; }
+  .btn.primary { background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; box-shadow:0 6px 18px rgba(79,70,229,.25); }
+  .btn.ghost { background:#fff; color:var(--ink); border:1px solid var(--line); }
+  .values { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:28px; }
+  .value { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); }
+  .value .ic { width:36px; height:36px; border-radius:10px; display:grid; place-items:center; font-size:18px; margin-bottom:10px; }
+  .value b { display:block; font-size:15px; margin-bottom:4px; } .value span { color:var(--muted); font-size:13.5px; line-height:1.5; }
+
+  section.block { padding:26px 28px; }
+  .section-title { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .section-title h2 { margin:0; font-size:20px; letter-spacing:-.02em; } .section-title p { margin:0; color:var(--muted); font-size:13.5px; }
+
+  .console { display:grid; grid-template-columns: minmax(0,1fr) 380px; gap:18px; }
+  .console > * { min-width:0; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .chat { display:flex; flex-direction:column; height:640px; }
+  .chat-head { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--line); }
+  .chat-head .title { font-weight:600; } .chat-head .sub { color:var(--muted); font-size:12.5px; }
+  .chat-head .spacer { flex:1; }
+  .msgs { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .empty { margin:auto; text-align:center; color:var(--muted); max-width:440px; }
+  .empty .big { font-size:34px; color:var(--brand); } .empty h3 { color:var(--ink); margin:8px 0 6px; font-size:17px; }
+  .suggest { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:14px; }
+  .suggest button { border:1px solid var(--line); background:#fff; border-radius:999px; padding:7px 12px; font:500 13px Inter,sans-serif; color:var(--ink2); cursor:pointer; }
+  .suggest button:hover { border-color:var(--brand); color:var(--brand); }
+  .msg { display:flex; gap:10px; max-width:88%; }
+  .msg.user { align-self:flex-end; flex-direction:row-reverse; }
+  .avatar { width:30px; height:30px; border-radius:50%; flex:none; display:grid; place-items:center; font-size:11px; font-weight:700; }
+  .msg.user .avatar { background:#e2e8f0; color:var(--ink2); }
+  .msg.bot .avatar { background:linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; font-size:13px; }
+  .bubble { padding:11px 14px; border-radius:14px; line-height:1.6; overflow-wrap:break-word; min-width:0; }
+  .msg.user .bubble { background:var(--brand); color:#fff; border-bottom-right-radius:4px; white-space:pre-wrap; }
+  .msg.bot .bubble { background:#f8fafc; border:1px solid var(--line); border-bottom-left-radius:4px; }
+  .msg.bot .bubble.err { background:var(--bad-soft); border-color:#fecaca; color:#991b1b; white-space:pre-wrap; font-size:13px; }
+  .badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .badge { font-size:11.5px; font-weight:600; padding:3px 8px; border-radius:6px; background:#eef2f7; color:var(--ink2); }
+  .badge.ok { background:var(--ok-soft); color:var(--ok); } .badge.warn { background:var(--warn-soft); color:var(--warn); }
+  .typing span { display:inline-block; width:7px; height:7px; margin:0 2px; border-radius:50%; background:#94a3b8; animation:b 1s infinite; }
+  .typing span:nth-child(2){animation-delay:.15s} .typing span:nth-child(3){animation-delay:.3s}
+  @keyframes b { 0%,80%,100%{transform:translateY(0);opacity:.5} 40%{transform:translateY(-5px);opacity:1} }
+  .composer { border-top:1px solid var(--line); padding:12px; display:flex; gap:10px; align-items:flex-end; }
+  .composer textarea { flex:1; min-width:0; resize:none; height:46px; max-height:140px; border:1px solid var(--line); border-radius:10px; padding:12px; font:14.5px Inter,sans-serif; outline:none; }
+  .composer textarea:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(79,70,229,.12); }
+  .composer .btn { height:46px; }
+  .btn:disabled { opacity:.6; cursor:wait; }
+
+  .bubble p { margin:0 0 9px; } .bubble p:last-child { margin:0; }
+  .bubble h3, .bubble h4, .bubble h5 { margin:12px 0 6px; font-size:15px; }
+  .bubble ul, .bubble ol { margin:4px 0 9px; padding-left:22px; } .bubble li { margin:3px 0; }
+  .bubble code { background:#eef2f7; padding:1px 5px; border-radius:4px; font-family:Consolas,monospace; font-size:13px; }
+  .bubble pre { background:#0f172a; color:#e2e8f0; padding:10px 12px; border-radius:8px; overflow-x:auto; font-size:12.5px; }
+  .bubble pre code { background:none; color:inherit; padding:0; }
+  .bubble table { border-collapse:collapse; margin:8px 0; font-size:13px; display:block; overflow-x:auto; }
+  .bubble th, .bubble td { border:1px solid var(--line); padding:6px 9px; text-align:left; vertical-align:top; min-width:70px; }
+  .bubble th { background:#f1f5f9; } .bubble td:first-child { font-weight:600; white-space:nowrap; }
+  .bubble blockquote { margin:6px 0; padding:4px 12px; border-left:3px solid #c7d2fe; color:var(--ink2); }
+  .bubble hr { border:0; border-top:1px solid var(--line); margin:10px 0; }
+
+  .side { display:flex; flex-direction:column; gap:18px; }
+  .side .panel { padding:16px; }
+  .side h3 { margin:0 0 12px; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .models { display:flex; flex-direction:column; gap:8px; }
+  .model { display:flex; gap:10px; align-items:flex-start; border:1.5px solid var(--line); border-radius:11px; padding:10px 12px; cursor:pointer; transition:.15s; }
+  .model:hover { border-color:#c7d2fe; } .model.sel { border-color:var(--brand); background:var(--brand-soft); }
+  .model input { margin-top:3px; accent-color:var(--brand); }
+  .model b { font-size:14px; } .model small { display:block; color:var(--muted); font-size:12.5px; margin-top:2px; }
+  .rec { font-size:10px; font-weight:700; color:var(--brand); background:#fff; border:1px solid #c7d2fe; padding:1px 6px; border-radius:5px; margin-left:6px; vertical-align:2px; }
+  .switch { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; padding:10px 12px; border-radius:10px; background:#f8fafc; border:1px solid var(--line); font-size:13px; }
+  .switch small { display:block; color:var(--muted); font-size:12px; }
+  .tgl { position:relative; width:40px; height:22px; flex:none; } .tgl input { opacity:0; width:0; height:0; }
+  .tgl span { position:absolute; inset:0; background:#cbd5e1; border-radius:999px; transition:.2s; cursor:pointer; }
+  .tgl span:before { content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+  .tgl input:checked + span { background:var(--warn); } .tgl input:checked + span:before { transform:translateX(18px); }
+
+  .hop { display:flex; gap:10px; align-items:center; padding:9px 10px; border-radius:10px; transition:.3s; }
+  .hop .n { width:24px; height:24px; border-radius:50%; background:#e2e8f0; display:grid; place-items:center; font-size:12px; font-weight:700; color:var(--ink2); flex:none; }
+  .hop .t { flex:1; min-width:0; } .hop .t b { font-size:13.5px; } .hop .t small { display:block; color:var(--muted); font-size:12px; }
+  .hop .s { font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; background:#f1f5f9; color:var(--muted); }
+  .hop.trying { background:var(--warn-soft); } .hop.trying .n { background:var(--warn); color:#fff; } .hop.trying .s { background:#fde68a; color:#92400e; }
+  .hop.failed { background:var(--bad-soft); } .hop.failed .n { background:var(--bad); color:#fff; } .hop.failed .s { background:#fecaca; color:#991b1b; }
+  .hop.served { background:var(--ok-soft); } .hop.served .n { background:var(--ok); color:#fff; } .hop.served .s { background:#a7f3d0; color:#065f46; }
+  .hop.idle { opacity:.6; }
+  .vline { width:2px; height:8px; background:var(--line); margin-left:21px; }
+  .kv { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+  .kv div { background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:8px 10px; min-width:0; }
+  .kv small { display:block; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; } .kv b { font-size:15px; }
+
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .stat { padding:16px; } .stat small { color:var(--muted); font-size:12.5px; font-weight:500; } .stat b { display:block; font-size:26px; letter-spacing:-.02em; margin-top:4px; }
+  .stat span { font-size:12.5px; color:var(--muted); }
+  .analytics { display:grid; grid-template-columns: 1fr 1.6fr; gap:18px; margin-top:18px; }
+  .analytics > * { min-width:0; }
+  .analytics .panel { padding:16px; }
+  .bar { margin:10px 0; } .bar .l { display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px; }
+  .bar .track { height:9px; background:#eef2f7; border-radius:999px; overflow:hidden; } .bar .fill { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--brand),var(--brand2)); transition:width .4s; }
+  table.log { width:100%; border-collapse:collapse; font-size:13px; } .log th, .log td { text-align:left; padding:8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  .log th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .tablewrap { overflow-x:auto; }
+  .muted { color:var(--muted); }
+
+  .compare { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .compare .panel { padding:20px; } .compare h3 { margin:0 0 12px; font-size:16px; }
+  .compare ul { margin:0; padding:0; list-style:none; } .compare li { padding:8px 0 8px 28px; position:relative; border-bottom:1px dashed var(--line); line-height:1.5; color:var(--ink2); }
+  .compare li:last-child { border-bottom:0; }
+  .compare .without li:before { content:"✕"; position:absolute; left:4px; color:var(--bad); font-weight:700; }
+  .compare .with li:before { content:"✓"; position:absolute; left:4px; color:var(--ok); font-weight:700; }
+  .compare .with { border-color:#c7d2fe; background:linear-gradient(180deg,#fff,#f8f9ff); }
+  .usecases { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:18px; }
+  .usecase { padding:18px; } .usecase .ic { font-size:22px; } .usecase b { display:block; margin:8px 0 6px; font-size:15px; } .usecase p { margin:0; color:var(--muted); line-height:1.55; font-size:13.5px; }
+  .how { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .step { padding:16px; } .step .num { width:28px; height:28px; border-radius:8px; background:var(--brand-soft); color:var(--brand); font-weight:700; display:grid; place-items:center; }
+  .step b { display:block; margin:10px 0 4px; } .step p { margin:0; color:var(--muted); font-size:13.5px; line-height:1.5; }
+  footer { padding:26px 28px 34px; color:var(--muted); font-size:13px; text-align:center; }
+
+  @media (max-width: 1100px) { .console { grid-template-columns:1fr; } .values, .stats, .how { grid-template-columns:repeat(2,1fr); } .usecases { grid-template-columns:1fr 1fr; } .analytics { grid-template-columns:1fr; } }
+  @media (max-width: 680px) {
+    nav { padding:0 16px; gap:12px; } nav .links { display:none; } .hero, section.block, footer { padding-left:16px; padding-right:16px; }
+    .hero h1 { font-size:27px; } .values, .stats, .how, .usecases, .compare { grid-template-columns:1fr; }
+    .chat { height:560px; } .msg { max-width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-mark">◆</div>OmniRoute</div>
+  <div class="links"><a href="#console">Console</a><a href="#analytics">Analytics</a><a href="#why">Why OmniRoute</a><a href="#how">How it works</a></div>
+  <div class="status" id="status"><span class="dot"></span><span id="status-text">Connecting...</span></div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Unified AI Gateway · self-hosted</span>
+    <h1>One API for every AI model, with <span>automatic failover</span> when a provider goes down.</h1>
+    <p class="lead">OmniRoute sits between your applications and AI providers such as Google Gemini, Groq and OpenRouter.
+      Your app talks to one endpoint with one key. OmniRoute picks the provider, switches to a backup the moment one fails,
+      and records the latency and cost of every request.</p>
+    <div class="cta"><a class="btn primary" href="#console">Open the console</a><a class="btn ghost" href="#why">Why it matters</a></div>
+    <div class="values">
+      <div class="value"><div class="ic" style="background:#ecfdf5">🛡️</div><b>Always answers</b><span>If Gemini is overloaded or down, requests move to Groq, then OpenRouter, then a local model on this computer.</span></div>
+      <div class="value"><div class="ic" style="background:#eef2ff">🔌</div><b>One API, many models</b><span>Switch models by changing a name, not your code. OpenAI-compatible format.</span></div>
+      <div class="value"><div class="ic" style="background:#fffbeb">📊</div><b>Cost &amp; speed visibility</b><span>Every answer shows which provider served it, how long it took and what it cost.</span></div>
+      <div class="value"><div class="ic" style="background:#fdf2f8">🔐</div><b>Keys stay private</b><span>Provider keys live only on the gateway. Applications never see them.</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="block" id="console">
+  <div class="wrap">
+    <div class="section-title"><h2>Console</h2><p>Chat with any model through OmniRoute and see how each request is routed.</p></div>
+    <div class="console">
+      <div class="panel chat">
+        <div class="chat-head">
+          <div><div class="title">Conversation</div><div class="sub" id="model-sub">Smart routing · Gemini Flash first, then Groq, OpenRouter, Gemini Lite, local model</div></div>
+          <div class="spacer"></div>
+          <button class="btn ghost" id="clear" style="padding:7px 12px">New chat</button>
+        </div>
+        <div class="msgs" id="msgs">
+          <div class="empty" id="empty">
+            <div class="big">◆</div>
+            <h3>Ask anything</h3>
+            <div>Your message goes to OmniRoute, which chooses a provider and falls back automatically if it fails.</div>
+            <div class="suggest">
+              <button>Explain cloud computing in simple words</button>
+              <button>Compare SQL and NoSQL in a table</button>
+              <button>Give 3 uses of AI in education</button>
+              <button>Write a Python function to reverse a string</button>
+            </div>
+          </div>
+        </div>
+        <div class="composer">
+          <textarea id="input" placeholder="Message OmniRoute...  (Enter to send, Shift+Enter for a new line)"></textarea>
+          <button class="btn primary" id="send">Send</button>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="panel">
+          <h3>Model</h3>
+          <div class="models" id="models"></div>
+          <div class="switch">
+            <div><b>Resilience test</b><small>Force the selected provider to fail and watch OmniRoute recover.</small></div>
+            <label class="tgl"><input type="checkbox" id="sim"><span></span></label>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Routing trace</h3>
+          <div id="trace"></div>
+          <div class="kv">
+            <div><small>Served by</small><b id="k-prov">–</b></div>
+            <div><small>Latency</small><b id="k-lat">–</b></div>
+            <div><small>Tokens</small><b id="k-tok">–</b></div>
+            <div><small>Cost</small><b id="k-cost">–</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="analytics">
+  <div class="wrap">
+    <div class="section-title"><h2>Analytics</h2><p>Live figures for this session, reported by the gateway on every response.</p></div>
+    <div class="stats">
+      <div class="panel stat"><small>Requests</small><b id="s-req">0</b><span id="s-ok">0 succeeded</span></div>
+      <div class="panel stat"><small>Outages absorbed</small><b id="s-fb">0</b><span>requests rescued by failover</span></div>
+      <div class="panel stat"><small>Average latency</small><b id="s-lat">–</b><span>end to end</span></div>
+      <div class="panel stat"><small>Total cost</small><b id="s-cost">$0.0000</b><span>across all providers</span></div>
+    </div>
+    <div class="analytics">
+      <div class="panel"><h3 style="margin:0 0 6px;font-size:15px">Requests by provider</h3><div id="bars" class="muted" style="font-size:13px">No requests yet.</div></div>
+      <div class="panel"><h3 style="margin:0 0 6px;font-size:15px">Request log</h3>
+        <div class="tablewrap"><table class="log"><thead><tr><th>Time</th><th>Prompt</th><th>Requested</th><th>Served by</th><th>Failover</th><th>Latency</th><th>Cost</th></tr></thead>
+        <tbody id="log"><tr><td colspan="7" class="muted">No requests yet.</td></tr></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="why">
+  <div class="wrap">
+    <div class="section-title"><h2>Why OmniRoute</h2><p>The problem it solves and who it helps.</p></div>
+    <div class="compare">
+      <div class="panel without"><h3>Calling an AI provider directly</h3><ul>
+        <li>When the provider is overloaded or down, your app shows an error.</li>
+        <li>Each provider has its own SDK, request format and error codes.</li>
+        <li>Switching provider means rewriting and redeploying code.</li>
+        <li>API keys are copied into every app that needs them.</li>
+        <li>No single place to see speed and spend per request.</li>
+      </ul></div>
+      <div class="panel with"><h3>Calling OmniRoute</h3><ul>
+        <li>Failed requests move to a backup provider in seconds.</li>
+        <li>One OpenAI-compatible API for Gemini, Groq, OpenRouter and more.</li>
+        <li>Change models or provider order in one configuration file.</li>
+        <li>Provider keys stay on the gateway; apps use one gateway key.</li>
+        <li>Latency, tokens and cost are reported for every request.</li>
+      </ul></div>
+    </div>
+    <div class="usecases">
+      <div class="panel usecase"><div class="ic">🎓</div><b>College &amp; student projects</b><p>Free tiers run out or get rate-limited. OmniRoute spreads requests across several free providers so the project keeps working.</p></div>
+      <div class="panel usecase"><div class="ic">💬</div><b>Chatbots &amp; support assistants</b><p>Users never see "service unavailable". If one model fails, another answers the same conversation.</p></div>
+      <div class="panel usecase"><div class="ic">🏢</div><b>Teams and startups</b><p>One gateway for all internal tools, with one place to control keys, models and spending.</p></div>
+      <div class="panel usecase"><div class="ic">⚡</div><b>Speed-sensitive apps</b><p>Route to a fast provider like Groq for instant replies and keep larger models as backup.</p></div>
+      <div class="panel usecase"><div class="ic">💰</div><b>Cost control</b><p>See the cost of every request and move traffic to cheaper or free models without code changes.</p></div>
+      <div class="panel usecase"><div class="ic">🔄</div><b>No vendor lock-in</b><p>Try a new model by adding one entry to the configuration. Applications stay unchanged.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="how">
+  <div class="wrap">
+    <div class="section-title"><h2>How it works</h2><p>Four steps on every request.</p></div>
+    <div class="how">
+      <div class="panel step"><div class="num">1</div><b>Authenticate</b><p>The application sends an OpenAI-style request with its OmniRoute key. Provider keys are never exposed.</p></div>
+      <div class="panel step"><div class="num">2</div><b>Route</b><p>The router maps the requested model to a provider deployment defined in config.yaml.</p></div>
+      <div class="panel step"><div class="num">3</div><b>Fail over</b><p>If the provider errors or exceeds its timeout, the request moves down the fallback chain.</p></div>
+      <div class="panel step"><div class="num">4</div><b>Measure</b><p>The answer returns in one standard format with provider, latency, tokens and cost attached.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>OmniRoute · self-hosted AI gateway built on LiteLLM · running locally at 127.0.0.1</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Small, safe Markdown renderer: escapes HTML first, then formats.
+function inline(t) {
+  return t
+    .replace(/&lt;br\s*\/?&gt;/gi, "<br>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/__([^_]+)__/g, "<b>$1</b>")
+    .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<i>$2</i>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+function renderMarkdown(md) {
+  const lines = esc(md.replace(/\r/g, "")).split("\n");
+  let html = "", i = 0;
+  const isTableSep = (l) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l);
+  const cells = (l) => l.trim().replace(/^\||\|$/g, "").split("|").map(c => inline(c.trim()));
+  while (i < lines.length) {
+    const l = lines[i];
+    if (/^```/.test(l)) {
+      let code = []; i++;
+      while (i < lines.length && !/^```/.test(lines[i])) code.push(lines[i++]);
+      i++; html += `<pre><code>${code.join("\n")}</code></pre>`; continue;
+    }
+    if (/^\s*$/.test(l)) { i++; continue; }
+    let m;
+    if ((m = l.match(/^(#{1,6})\s+(.*)$/))) { const n = Math.min(m[1].length + 2, 5); html += `<h${n}>${inline(m[2])}</h${n}>`; i++; continue; }
+    if (/^\s*([-*_])\s*\1\s*\1[\s\-*_]*$/.test(l)) { html += "<hr>"; i++; continue; }
+    if (l.includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+      const head = cells(l); i += 2; let rows = "";
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim()) rows += "<tr>" + cells(lines[i++]).map(c => `<td>${c}</td>`).join("") + "</tr>";
+      html += `<table><thead><tr>${head.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`; continue;
+    }
+    if (/^\s*[-*+]\s+/.test(l)) {
+      let items = [];
+      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) items.push(inline(lines[i++].replace(/^\s*[-*+]\s+/, "")));
+      html += "<ul>" + items.map(t => `<li>${t}</li>`).join("") + "</ul>"; continue;
+    }
+    if (/^\s*\d+[.)]\s+/.test(l)) {
+      let items = [];
+      while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) items.push(inline(lines[i++].replace(/^\s*\d+[.)]\s+/, "")));
+      html += "<ol>" + items.map(t => `<li>${t}</li>`).join("") + "</ol>"; continue;
+    }
+    if (/^&gt;\s?/.test(l)) {
+      let q = [];
+      while (i < lines.length && /^&gt;\s?/.test(lines[i])) q.push(inline(lines[i++].replace(/^&gt;\s?/, "")));
+      html += `<blockquote>${q.join("<br>")}</blockquote>`; continue;
+    }
+    let para = [];
+    while (i < lines.length && lines[i].trim() && !/^(#{1,6}\s|```|\s*[-*+]\s+|\s*\d+[.)]\s+|&gt;)/.test(lines[i])
+           && !(lines[i].includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1]))) para.push(inline(lines[i++]));
+    if (para.length) html += `<p>${para.join("<br>")}</p>`; else i++;
+  }
+  return html;
+}
+
+
+const MODELS = [
+  { id:"gemini-flash", name:"Smart routing", rec:true, desc:"Gemini Flash first, then Groq, OpenRouter, Gemini Lite, local model" },
+  { id:"groq-gpt-oss", name:"Groq · GPT-OSS 20B", desc:"Fastest replies, with OpenRouter and the local model as backup" },
+  { id:"openrouter-nemotron", name:"OpenRouter · Nemotron 3.5", desc:"Free model, with Gemini Lite and the local model as backup" },
+  { id:"gemini-lite", name:"Google · Gemini Flash-Lite", desc:"Lightweight Google model, with the local model as backup" },
+  { id:"local-qwen", name:"Local · Qwen2.5 1.5B", desc:"Runs on this computer, no internet needed (last-resort backup)" },
+];
+let CHAIN = [], history = [], stats = { req:0, ok:0, fb:0, lat:0, cost:0, by:{} }, busy = false;
+
+function renderModels() {
+  $("models").innerHTML = MODELS.map((m, i) => `
+    <label class="model ${i===0?"sel":""}"><input type="radio" name="model" value="${m.id}" ${i===0?"checked":""}>
+      <div><b>${esc(m.name)}</b>${m.rec?'<span class="rec">RECOMMENDED</span>':""}<small>${esc(m.desc)}</small></div></label>`).join("");
+  document.querySelectorAll('input[name=model]').forEach(r => r.onchange = () => {
+    document.querySelectorAll(".model").forEach(l => l.classList.toggle("sel", l.querySelector("input").checked));
+    const m = MODELS.find(x => x.id === r.value); $("model-sub").textContent = `${m.name} · ${m.desc}`; drawTrace();
+  });
+}
+const model = () => document.querySelector('input[name=model]:checked').value;
+
+function drawTrace(states = {}) {
+  const start = Math.max(0, CHAIN.findIndex(p => p.group === model()));
+  $("trace").innerHTML = CHAIN.slice(start).map((p, i) => {
+    const st = states[p.group] || "idle";
+    const label = { trying:"Calling", failed:"Failed", served:"Answered", idle:i===0?"Primary":"Backup" }[st];
+    return (i ? '<div class="vline"></div>' : "") + `<div class="hop ${st}"><div class="n">${i+1}</div>
+      <div class="t"><b>${esc(p.provider)}</b><small>${esc(p.model)}</small></div><div class="s">${label}</div></div>`;
+  }).join("");
+}
+
+async function refreshStatus() {
+  try {
+    const s = await (await fetch("/api/status")).json();
+    if (!CHAIN.length) { CHAIN = s.chain; drawTrace(); }
+    const up = s.gateway === "up";
+    const local = s.local && s.local.ready ? " · Local backup ready" : " · Local backup offline";
+    $("status").classList.toggle("up", up);
+    $("status-text").textContent = (up ? `Gateway online · ${s.models.length} models` : "Gateway offline") + local;
+  } catch { $("status").classList.remove("up"); $("status-text").textContent = "Console offline"; }
+}
+
+function addMsg(role, html, extra = "") {
+  $("empty")?.remove();
+  const el = document.createElement("div");
+  el.className = `msg ${role}`;
+  el.innerHTML = `<div class="avatar">${role === "user" ? "You" : "◆"}</div><div style="min-width:0"><div class="bubble ${extra}">${html}</div></div>`;
+  $("msgs").appendChild(el); $("msgs").scrollTop = $("msgs").scrollHeight;
+  return el;
+}
+
+async function send(text) {
+  text = (text ?? $("input").value).trim();
+  if (!text || busy) return;
+  busy = true; $("send").disabled = true; $("input").value = "";
+  const sim = $("sim").checked, chosen = model();
+  history.push({ role:"user", content:text });
+  addMsg("user", esc(text));
+  const pending = addMsg("bot", '<div class="typing"><span></span><span></span><span></span></div>');
+  const start = Math.max(0, CHAIN.findIndex(p => p.group === chosen));
+  const live = {}; live[CHAIN[start].group] = "trying"; drawTrace(live);
+  ["k-prov","k-lat","k-tok","k-cost"].forEach(id => $(id).textContent = "…");
+
+  let r;
+  try { r = await (await fetch("/api/ask", { method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ messages: history, model: chosen, simulate_failure: sim }) })).json(); }
+  catch (e) { r = { ok:false, status:0, error:String(e), seconds:0 }; }
+  pending.remove();
+  stats.req++;
+
+  if (!r.ok) {
+    history.pop();
+    const st = {}; CHAIN.slice(start).forEach(p => st[p.group] = "failed"); drawTrace(st);
+    addMsg("bot", esc(`All providers failed (HTTP ${r.status}).\n${r.error || ""}`), "err");
+    ["k-prov","k-lat","k-tok","k-cost"].forEach(id => $(id).textContent = "–");
+    logRow(text, chosen, "—", "failed", r.seconds || 0, 0);
+  } else {
+    history.push({ role:"assistant", content:r.answer });
+    const served = CHAIN.findIndex(p => p.group === r.served_group), st = {};
+    CHAIN.forEach((p, i) => { if (i >= start) st[p.group] = (served >= 0 && i < served) ? "failed" : (i === served ? "served" : "idle"); });
+    drawTrace(st);
+    const prov = served >= 0 ? CHAIN[served].provider : r.served_group;
+    const el = addMsg("bot", renderMarkdown(r.answer));
+    const fbBadge = r.fallbacks > 0 ? `<span class="badge warn">Failover ×${r.fallbacks}${sim ? " (test)" : ""}</span>` : `<span class="badge ok">Primary</span>`;
+    el.querySelector(".bubble").insertAdjacentHTML("afterend",
+      `<div class="badges"><span class="badge">${esc(prov)} · ${esc(r.served_model.split("/").slice(-1)[0])}</span>${fbBadge}<span class="badge">${r.seconds.toFixed(1)} s</span><span class="badge">${r.total_tokens ?? "–"} tokens</span><span class="badge">$${r.cost_usd.toFixed(5)}</span></div>`);
+    $("msgs").scrollTop = $("msgs").scrollHeight;
+    $("k-prov").textContent = prov; $("k-lat").textContent = r.seconds.toFixed(1) + " s";
+    $("k-tok").textContent = r.total_tokens ?? "–"; $("k-cost").textContent = "$" + r.cost_usd.toFixed(5);
+    stats.ok++; stats.lat += r.seconds; stats.cost += r.cost_usd; if (r.fallbacks > 0) stats.fb++;
+    stats.by[prov] = (stats.by[prov] || 0) + 1;
+    logRow(text, chosen, prov, r.fallbacks > 0 ? `×${r.fallbacks}` : "none", r.seconds, r.cost_usd);
+  }
+  updateStats();
+  busy = false; $("send").disabled = false; $("input").focus();
+}
+
+function updateStats() {
+  $("s-req").textContent = stats.req; $("s-ok").textContent = `${stats.ok} succeeded`;
+  $("s-fb").textContent = stats.fb; $("s-lat").textContent = stats.ok ? (stats.lat / stats.ok).toFixed(1) + " s" : "–";
+  $("s-cost").textContent = "$" + stats.cost.toFixed(4);
+  const total = Object.values(stats.by).reduce((a, b) => a + b, 0);
+  $("bars").innerHTML = total ? Object.entries(stats.by).sort((a,b) => b[1]-a[1]).map(([k, v]) =>
+    `<div class="bar"><div class="l"><span>${esc(k)}</span><b>${v}</b></div><div class="track"><div class="fill" style="width:${(v/total*100).toFixed(0)}%"></div></div></div>`).join("") : "No requests yet.";
+}
+
+function logRow(prompt, asked, served, fb, secs, cost) {
+  if (stats.req === 1) $("log").innerHTML = "";
+  const t = new Date().toLocaleTimeString([], { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+  const tag = fb === "failed" ? '<span class="badge" style="background:var(--bad-soft);color:var(--bad)">failed</span>'
+            : fb === "none" ? '<span class="badge ok">none</span>' : `<span class="badge warn">${fb}</span>`;
+  $("log").insertAdjacentHTML("afterbegin", `<tr><td>${t}</td><td>${esc(prompt.slice(0, 48))}${prompt.length > 48 ? "…" : ""}</td><td>${esc(asked)}</td><td>${esc(served)}</td><td>${tag}</td><td>${secs.toFixed(1)} s</td><td>$${cost.toFixed(5)}</td></tr>`);
+}
+
+$("send").onclick = () => send();
+$("input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+document.querySelectorAll(".suggest button").forEach(b => b.onclick = () => send(b.textContent));
+$("clear").onclick = () => { history = []; $("msgs").innerHTML = '<div class="empty" id="empty"><div class="big">◆</div><h3>New conversation</h3><div>Ask anything. OmniRoute will route it to the best available provider.</div></div>'; drawTrace(); };
+renderModels(); refreshStatus(); setInterval(refreshStatus, 5000);
+</script>
+</body>
+</html>

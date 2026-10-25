@@ -1,0 +1,40 @@
+model_list:
+  - model_name: gemini-flash
+    litellm_params:
+      model: gemini/gemini-flash-latest
+      api_key: os.environ/GEMINI_API_KEY
+      timeout: 10
+  - model_name: groq-gpt-oss
+    litellm_params:
+      model: groq/openai/gpt-oss-20b
+      api_key: os.environ/GROQ_API_KEY
+      timeout: 20
+  - model_name: openrouter-nemotron
+    litellm_params:
+      model: openrouter/nvidia/nemotron-3.5-lightning:free
+      api_key: os.environ/OPENROUTER_API_KEY
+      timeout: 30
+  - model_name: gemini-lite
+    litellm_params:
+      model: gemini/gemini-flash-lite-latest
+      api_key: os.environ/GEMINI_API_KEY
+      timeout: 30
+  # Local last-resort backup: runs on this computer through Ollama, no internet needed.
+  - model_name: local-qwen
+    litellm_params:
+      model: ollama/qwen2.5:1.5b
+      api_base: http://127.0.0.1:11434
+      timeout: 90
+
+router_settings:
+  routing_strategy: least-busy
+  num_retries: 0
+  fallbacks:
+    - {"gemini-flash": ["groq-gpt-oss", "openrouter-nemotron", "gemini-lite", "local-qwen"]}
+    - {"groq-gpt-oss": ["openrouter-nemotron", "gemini-lite", "local-qwen"]}
+    - {"openrouter-nemotron": ["gemini-lite", "local-qwen"]}
+    - {"gemini-lite": ["local-qwen"]}
+
+general_settings:
+  # Enables the console's Resilience test switch (forces a fallback). Keep for local use only.
+  dangerously_allow_mock_testing_request_params: true
